@@ -1,0 +1,8 @@
+{
+  "name": "Remix: O\u0027Neal Grill",
+  "description": "Sistema de Caixa e Comandas para gestão de bares e espetinhos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

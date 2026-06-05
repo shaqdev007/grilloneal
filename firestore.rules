@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Comanda
+    function isValidComanda(data, userId) {
+      return data.keys().hasAll(['nome', 'itens', 'createdAt', 'userId']) &&
+             data.keys().size() == 4 &&
+             data.nome is string && data.nome.size() > 0 && data.nome.size() <= 100 &&
+             data.itens is list && data.itens.size() <= 100 &&
+             data.createdAt is number &&
+             data.userId == userId;
+    }
+
+    // Gasto
+    function isValidGasto(data, userId) {
+      return data.keys().hasAll(['descricao', 'valor', 'data', 'userId']) &&
+             data.keys().size() == 4 &&
+             data.descricao is string && data.descricao.size() > 0 && data.descricao.size() <= 200 &&
+             data.valor is number &&
+             data.data is string && data.data.size() <= 50 &&
+             data.userId == userId;
+    }
+
+    // ProdutoCardapio
+    function isValidProdutoCardapio(data, userId) {
+      return data.keys().hasAll(['nome', 'preco', 'userId']) &&
+             data.keys().size() == 3 &&
+             data.nome is string && data.nome.size() > 0 && data.nome.size() <= 100 &&
+             data.preco is number &&
+             data.userId == userId;
+    }
+
+    // Caixa
+    function isValidCaixa(data, userId) {
+      return data.keys().hasAll(['Dinheiro', 'Pix', 'Cartão', 'userId']) &&
+             data.keys().size() == 4 &&
+             data.Dinheiro is number &&
+             data.Pix is number &&
+             data['Cartão'] is number &&
+             data.userId == userId;
+    }
+
+    match /users/{userId} {
+      match /comandas/{comandaId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(comandaId) && isValidComanda(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(comandaId) && isValidComanda(incoming(), userId) &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['nome', 'itens']);
+        allow delete: if isOwner(userId) && isValidId(comandaId);
+      }
+
+      match /gastos/{gastoId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(gastoId) && isValidGasto(incoming(), userId);
+        // Note: For gastos we typically only create and delete, or maybe update. We'll allow update of desc and valor.
+        allow update: if isOwner(userId) && isValidId(gastoId) && isValidGasto(incoming(), userId) &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['descricao', 'valor']);
+        allow delete: if isOwner(userId) && isValidId(gastoId);
+      }
+
+      match /cardapio/{cardapioId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(cardapioId) && isValidProdutoCardapio(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(cardapioId) && isValidProdutoCardapio(incoming(), userId) &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['nome', 'preco']);
+        allow delete: if isOwner(userId) && isValidId(cardapioId);
+      }
+
+      match /caixa/{caixaId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(caixaId) && isValidCaixa(incoming(), userId) && caixaId == 'atual';
+        allow update: if isOwner(userId) && isValidId(caixaId) && isValidCaixa(incoming(), userId) && caixaId == 'atual' &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['Dinheiro', 'Pix', 'Cartão']);
+        // Don't typically allow deletion of the global caixa, but maybe clear functionality needs it
+        allow delete: if isOwner(userId) && isValidId(caixaId) && caixaId == 'atual';
+      }
+    }
+  }
+}

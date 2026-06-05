@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "Comanda": {
+      "title": "Comanda",
+      "description": "Uma comanda aberta em uma mesa",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string" },
+        "itens": {
+          "type": "array",
+          "items": { "$ref": "#/entities/ComandaItem" }
+        },
+        "createdAt": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["nome", "itens", "createdAt", "userId"]
+    },
+    "Gasto": {
+      "title": "Gasto",
+      "description": "Um gasto do estabelecimento",
+      "type": "object",
+      "properties": {
+        "descricao": { "type": "string" },
+        "valor": { "type": "number" },
+        "data": { "type": "string" },
+        "userId": { "type": "string" }
+      },
+      "required": ["descricao", "valor", "data", "userId"]
+    },
+    "ProdutoCardapio": {
+      "title": "Produto do Cardápio",
+      "description": "Item disponível no cardápio",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string" },
+        "preco": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["nome", "preco", "userId"]
+    },
+    "Caixa": {
+      "title": "Caixa do Mês",
+      "description": "Resumo financeiro acumulado",
+      "type": "object",
+      "properties": {
+        "Dinheiro": { "type": "number" },
+        "Pix": { "type": "number" },
+        "Cartão": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["Dinheiro", "Pix", "Cartão", "userId"]
+    }
+  },
+  "firestore": {
+    "users/{userId}/comandas/{comandaId}": {
+      "schema": "#/entities/Comanda",
+      "description": "Comandas ativas do usuário"
+    },
+    "users/{userId}/gastos/{gastoId}": {
+      "schema": "#/entities/Gasto",
+      "description": "Gastos do usuário"
+    },
+    "users/{userId}/cardapio/{cardapioId}": {
+      "schema": "#/entities/ProdutoCardapio",
+      "description": "Produtos do cardápio do usuário"
+    },
+    "users/{userId}/caixa/atual": {
+      "schema": "#/entities/Caixa",
+      "description": "Caixa atual do usuário"
+    }
+  }
+}
