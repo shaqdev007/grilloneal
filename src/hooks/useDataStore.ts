@@ -26,30 +26,30 @@ export function useDataStore(userId: string | null) {
 
     setLoading(true);
 
-    const unsubComandas = onSnapshot(collection(db, 'users', userId, 'comandas'), (snapshot) => {
+    const unsubComandas = onSnapshot(collection(db, 'restaurante', 'onealgrill', 'comandas'), (snapshot) => {
       setComandas(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comanda)));
     });
 
-    const unsubGastos = onSnapshot(collection(db, 'users', userId, 'gastos'), (snapshot) => {
+    const unsubGastos = onSnapshot(collection(db, 'restaurante', 'onealgrill', 'gastos'), (snapshot) => {
       setGastos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Gasto)));
     });
 
-    const unsubCardapio = onSnapshot(collection(db, 'users', userId, 'cardapio'), (snapshot) => {
+    const unsubCardapio = onSnapshot(collection(db, 'restaurante', 'onealgrill', 'cardapio'), (snapshot) => {
       setCardapio(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProdutoCardapio)));
     });
 
-    const unsubRendimentos = onSnapshot(collection(db, 'users', userId, 'rendimentos'), (snapshot) => {
+    const unsubRendimentos = onSnapshot(collection(db, 'restaurante', 'onealgrill', 'rendimentos'), (snapshot) => {
       setRendimentos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Rendimento)));
     });
 
-    const unsubCaixa = onSnapshot(doc(db, 'users', userId, 'caixa', 'atual'), (snapshot) => {
+    const unsubCaixa = onSnapshot(doc(db, 'restaurante', 'onealgrill', 'caixa', 'atual'), (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data();
         setCaixaMetodos({ Dinheiro: data.Dinheiro, Pix: data.Pix, Cartão: data['Cartão'] });
       } else {
         setCaixaMetodos(DEFAULT_CAIXA);
         // Create it initially
-        setDoc(doc(db, 'users', userId, 'caixa', 'atual'), { ...DEFAULT_CAIXA, userId }).catch(console.error);
+        setDoc(doc(db, 'restaurante', 'onealgrill', 'caixa', 'atual'), { ...DEFAULT_CAIXA }).catch(console.error);
       }
       setLoading(false);
     });
@@ -69,7 +69,7 @@ export function useDataStore(userId: string | null) {
     if (!sanitizedNome) return;
     const id = Date.now().toString();
     try {
-      await setDoc(doc(db, 'users', userId, 'comandas', id), {
+      await setDoc(doc(db, 'restaurante', 'onealgrill', 'comandas', id), {
         nome: sanitizedNome,
         itens: [],
         createdAt: Date.now(),
@@ -85,7 +85,7 @@ export function useDataStore(userId: string | null) {
     if (!comanda) return;
     try {
       const novosItens = [...comanda.itens, { id: Date.now().toString() + Math.random(), nome: nomeProduto.trim().substring(0, 50), preco }];
-      await updateDoc(doc(db, 'users', userId, 'comandas', comandaId), {
+      await updateDoc(doc(db, 'restaurante', 'onealgrill', 'comandas', comandaId), {
         itens: novosItens
       });
     } catch (e) { console.error('Error adding item', e); }
@@ -97,7 +97,7 @@ export function useDataStore(userId: string | null) {
     if (!comanda) return;
     try {
       const novosItens = comanda.itens.filter(item => item.id !== itemId);
-      await updateDoc(doc(db, 'users', userId, 'comandas', comandaId), {
+      await updateDoc(doc(db, 'restaurante', 'onealgrill', 'comandas', comandaId), {
         itens: novosItens
       });
     } catch (e) { console.error('Error removing item', e); }
@@ -112,19 +112,19 @@ export function useDataStore(userId: string | null) {
     const novoCaixa = { ...caixaMetodos, [metodo]: caixaMetodos[metodo] + total };
 
     try {
-      await updateDoc(doc(db, 'users', userId, 'caixa', 'atual'), {
+      await updateDoc(doc(db, 'restaurante', 'onealgrill', 'caixa', 'atual'), {
         [metodo]: novoCaixa[metodo]
       });
       // Registrar rendimento
       if (total > 0) {
-        await setDoc(doc(db, 'users', userId, 'rendimentos', Date.now().toString()), {
+        await setDoc(doc(db, 'restaurante', 'onealgrill', 'rendimentos', Date.now().toString()), {
           valor: total,
           metodo,
           data: new Date().toISOString(),
           userId
         });
       }
-      await deleteDoc(doc(db, 'users', userId, 'comandas', comandaId));
+      await deleteDoc(doc(db, 'restaurante', 'onealgrill', 'comandas', comandaId));
     } catch (e) { console.error('Error closing comanda', e); }
   };
 
@@ -134,7 +134,7 @@ export function useDataStore(userId: string | null) {
     if (!sanitizedNome || isNaN(preco) || preco <= 0 || preco > 100000) return;
     const id = Date.now().toString();
     try {
-      await setDoc(doc(db, 'users', userId, 'cardapio', id), {
+      await setDoc(doc(db, 'restaurante', 'onealgrill', 'cardapio', id), {
         nome: sanitizedNome,
         preco,
         userId
@@ -145,7 +145,7 @@ export function useDataStore(userId: string | null) {
   const removerProduto = async (id: string) => {
     if (!userId) return;
     try {
-      await deleteDoc(doc(db, 'users', userId, 'cardapio', id));
+      await deleteDoc(doc(db, 'restaurante', 'onealgrill', 'cardapio', id));
     } catch (e) { console.error('Error removing product', e); }
   };
 
@@ -155,7 +155,7 @@ export function useDataStore(userId: string | null) {
     if (!sanitizedDesc || isNaN(valor) || valor <= 0 || valor > 100000) return;
     const id = Date.now().toString();
     try {
-      await setDoc(doc(db, 'users', userId, 'gastos', id), {
+      await setDoc(doc(db, 'restaurante', 'onealgrill', 'gastos', id), {
         descricao: sanitizedDesc,
         valor,
         data: new Date().toISOString(),
@@ -168,10 +168,10 @@ export function useDataStore(userId: string | null) {
     if (!userId) return;
     try {
       // In a real app we'd batch delete, but for simplicity we iterate.
-      for (const c of comandas) await deleteDoc(doc(db, 'users', userId, 'comandas', c.id));
-      for (const g of gastos) await deleteDoc(doc(db, 'users', userId, 'gastos', g.id));
+      for (const c of comandas) await deleteDoc(doc(db, 'restaurante', 'onealgrill', 'comandas', c.id));
+      for (const g of gastos) await deleteDoc(doc(db, 'restaurante', 'onealgrill', 'gastos', g.id));
       // Reset caixa
-      await setDoc(doc(db, 'users', userId, 'caixa', 'atual'), { ...DEFAULT_CAIXA, userId });
+      await setDoc(doc(db, 'restaurante', 'onealgrill', 'caixa', 'atual'), { ...DEFAULT_CAIXA, userId });
     } catch (e) { console.error('Error clearing data', e); }
   };
 

@@ -89,9 +89,10 @@ export default function App() {
     return (
        <div className="min-h-screen bg-[#121214] flex flex-col items-center justify-center p-4">
          <div className="bg-[#1a1a1e] p-8 rounded-lg shadow-xl border border-gray-800 text-center max-w-sm w-full space-y-6">
-           <div>
-             <h1 className="text-3xl font-extrabold text-amber-500 tracking-tight">O'Neal Grill</h1>
-             <p className="text-gray-400 text-sm mt-2">Sistema de Gestão</p>
+           <div className="flex flex-col items-center">
+             <h1 className="text-4xl font-extrabold text-amber-500 tracking-tight">O'Neal Grill</h1>
+             {/* eslint-disable-next-line @next/next/no-img-element */}
+             <p className="text-gray-400 text-sm mt-4">Sistema de Gestão</p>
            </div>
            
            <form onSubmit={handleMasterLogin} className="space-y-4">
