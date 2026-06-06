@@ -35,6 +35,7 @@ export default function App() {
     rendimentos,
     adicionarComanda,
     adicionarItemComanda,
+    removerItemComanda,
     fecharComanda,
     lancarGasto,
     limparDados,
@@ -182,6 +183,7 @@ export default function App() {
                 cardapio={cardapio}
                 adicionarComanda={adicionarComanda}
                 adicionarItemComanda={adicionarItemComanda}
+                removerItemComanda={removerItemComanda}
                 fecharComanda={fecharComanda}
               />
             )}

@@ -91,6 +91,18 @@ export function useDataStore(userId: string | null) {
     } catch (e) { console.error('Error adding item', e); }
   };
 
+  const removerItemComanda = async (comandaId: string, itemId: string) => {
+    if (!userId) return;
+    const comanda = comandas.find(c => c.id === comandaId);
+    if (!comanda) return;
+    try {
+      const novosItens = comanda.itens.filter(item => item.id !== itemId);
+      await updateDoc(doc(db, 'users', userId, 'comandas', comandaId), {
+        itens: novosItens
+      });
+    } catch (e) { console.error('Error removing item', e); }
+  };
+
   const fecharComanda = async (comandaId: string, metodo: MetodoPagamento) => {
     if (!userId) return;
     const comanda = comandas.find((c) => c.id === comandaId);
@@ -172,6 +184,7 @@ export function useDataStore(userId: string | null) {
     loading,
     adicionarComanda,
     adicionarItemComanda,
+    removerItemComanda,
     fecharComanda,
     lancarGasto,
     limparDados,

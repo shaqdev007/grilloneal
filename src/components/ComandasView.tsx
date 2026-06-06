@@ -7,10 +7,11 @@ interface Props {
   cardapio: ProdutoCardapio[];
   adicionarComanda: (nome: string) => void;
   adicionarItemComanda: (comandaId: string, nomeProduto: string, preco: number) => void;
+  removerItemComanda: (comandaId: string, itemId: string) => void;
   fecharComanda: (comandaId: string, metodo: MetodoPagamento) => void;
 }
 
-export function ComandasView({ comandas, cardapio, adicionarComanda, adicionarItemComanda, fecharComanda }: Props) {
+export function ComandasView({ comandas, cardapio, adicionarComanda, adicionarItemComanda, removerItemComanda, fecharComanda }: Props) {
   const [comandaEmFechamento, setComandaEmFechamento] = useState<Comanda | null>(null);
   const [showNovaMesaModal, setShowNovaMesaModal] = useState(false);
   const [novaMesaNome, setNovaMesaNome] = useState('');
@@ -77,9 +78,27 @@ export function ComandasView({ comandas, cardapio, adicionarComanda, adicionarIt
                 {isExpanded && (
                   <div className="p-4 pt-0 space-y-3">
                     <div className="text-xs text-gray-400">
-                      {comanda.itens.length > 0 
-                        ? comanda.itens.map(i => i.nome).join(', ') 
-                        : 'Nenhum item consumido'}
+                      {comanda.itens.length > 0 ? (
+                        <ul className="space-y-1">
+                          {comanda.itens.map(item => (
+                            <li key={item.id} className="flex justify-between items-center bg-[#202024] p-1.5 rounded">
+                              <span>{item.nome}</span>
+                              <div className="flex items-center gap-2">
+                                <span>R$ {item.preco.toFixed(2)}</span>
+                                <button
+                                  onClick={() => removerItemComanda(comanda.id, item.id)}
+                                  className="text-red-500 hover:text-red-400 bg-[#29292e] hover:bg-[#323238] rounded-full p-1 transition-colors"
+                                  title="Remover item"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className="block p-1.5">Nenhum item consumido</span>
+                      )}
                     </div>
                     <div className="grid grid-cols-2 gap-2 py-2">
                       {cardapio.map((produto) => (
