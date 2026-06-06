@@ -8,6 +8,7 @@ import { ComandasView } from './components/ComandasView';
 import { GastosView } from './components/GastosView';
 import { CaixaView } from './components/CaixaView';
 import { CardapioView } from './components/CardapioView';
+import { FaturamentoView } from './components/FaturamentoView';
 import { Navigation } from './components/Navigation';
 import { useDataStore } from './hooks/useDataStore';
 import { TelaAtiva } from './types';
@@ -31,6 +32,7 @@ export default function App() {
     caixaMetodos,
     gastos,
     cardapio,
+    rendimentos,
     adicionarComanda,
     adicionarItemComanda,
     fecharComanda,
@@ -184,14 +186,14 @@ export default function App() {
               />
             )}
 
-            {telaAtiva === 'gastos' && (
+            {telaAtiva === 'gastos' && user?.email?.startsWith('master') && (
               <GastosView 
                 gastos={gastos}
                 lancarGasto={lancarGasto}
               />
             )}
 
-            {telaAtiva === 'caixa' && (
+            {telaAtiva === 'caixa' && user?.email?.startsWith('master') && (
               <CaixaView 
                 caixaMetodos={caixaMetodos}
                 gastos={gastos}
@@ -206,11 +208,18 @@ export default function App() {
                 removerProduto={removerProduto}
               />
             )}
+
+            {telaAtiva === 'faturamento' && user?.email?.startsWith('master') && (
+              <FaturamentoView 
+                rendimentos={rendimentos}
+                gastos={gastos}
+              />
+            )}
           </main>
         )}
       </div>
 
-      <Navigation telaAtiva={telaAtiva} setTelaAtiva={setTelaAtiva} />
+      <Navigation telaAtiva={telaAtiva} setTelaAtiva={setTelaAtiva} userEmail={user?.email} />
     </div>
   );
 }

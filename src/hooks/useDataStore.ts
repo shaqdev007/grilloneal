@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Comanda, CaixaMetodos, Gasto, MetodoPagamento, ProdutoCardapio } from '../types';
+import { Comanda, CaixaMetodos, Gasto, MetodoPagamento, ProdutoCardapio, Rendimento } from '../types';
 import { db } from '../lib/firebase';
 import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
@@ -10,6 +10,7 @@ export function useDataStore(userId: string | null) {
   const [caixaMetodos, setCaixaMetodos] = useState<CaixaMetodos>(DEFAULT_CAIXA);
   const [gastos, setGastos] = useState<Gasto[]>([]);
   const [cardapio, setCardapio] = useState<ProdutoCardapio[]>([]);
+  const [rendimentos, setRendimentos] = useState<Rendimento[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,6 +19,7 @@ export function useDataStore(userId: string | null) {
       setCaixaMetodos(DEFAULT_CAIXA);
       setGastos([]);
       setCardapio([]);
+      setRendimentos([]);
       setLoading(false);
       return;
     }
@@ -36,6 +38,10 @@ export function useDataStore(userId: string | null) {
       setCardapio(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProdutoCardapio)));
     });
 
+    const unsubRendimentos = onSnapshot(collection(db, 'users', userId, 'rendimentos'), (snapshot) => {
+      setRendimentos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Rendimento)));
+    });
+
     const unsubCaixa = onSnapshot(doc(db, 'users', userId, 'caixa', 'atual'), (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data();
@@ -52,6 +58,7 @@ export function useDataStore(userId: string | null) {
       unsubComandas();
       unsubGastos();
       unsubCardapio();
+      unsubRendimentos();
       unsubCaixa();
     };
   }, [userId]);
@@ -96,6 +103,15 @@ export function useDataStore(userId: string | null) {
       await updateDoc(doc(db, 'users', userId, 'caixa', 'atual'), {
         [metodo]: novoCaixa[metodo]
       });
+      // Registrar rendimento
+      if (total > 0) {
+        await setDoc(doc(db, 'users', userId, 'rendimentos', Date.now().toString()), {
+          valor: total,
+          metodo,
+          data: new Date().toISOString(),
+          userId
+        });
+      }
       await deleteDoc(doc(db, 'users', userId, 'comandas', comandaId));
     } catch (e) { console.error('Error closing comanda', e); }
   };
@@ -152,6 +168,7 @@ export function useDataStore(userId: string | null) {
     caixaMetodos,
     gastos,
     cardapio,
+    rendimentos,
     loading,
     adicionarComanda,
     adicionarItemComanda,

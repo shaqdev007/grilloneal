@@ -28,4 +28,11 @@ export interface ProdutoCardapio extends Produto {
   id: string;
 }
 
-export type TelaAtiva = 'comandas' | 'gastos' | 'caixa' | 'cardapio';
+export interface Rendimento {
+  id: string;
+  valor: number;
+  data: string;
+  metodo: MetodoPagamento;
+}
+
+export type TelaAtiva = 'comandas' | 'gastos' | 'caixa' | 'cardapio' | 'faturamento';
